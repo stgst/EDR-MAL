@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>EDR & MalWare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-[url(./wallpaper.png)] bg-cover min-h-screen flex items-center justify-center text-white">
+
+    <div class="flex flex-col items-center max-w-6xl w-full px-4">
+        <h1 class="text-4xl font-bold mb-6 text-center drop-shadow-md">
+            EDR & MalWare
+        </h1>
+
+        <!-- 隊伍選單 -->
+        <div class="mb-10">
+            <label for="teamSelect" class="block mb-2 text-lg font-medium text-white text-center">選擇隊伍</label>
+            <select id="teamSelect"
+                class="bg-white/10 backdrop-blur-md text-white border border-white/20 rounded px-4 py-2">
+                <option value="" disabled selected>請選擇隊伍</option>
+                <!-- 產生 1~10 隊 -->
+                <script>
+                    for (let i = 1; i <= 2; i++) {
+                        document.write(`<option value="${i}">第 ${i} 隊</option>`);
+                    }
+                </script>
+            </select>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-12 items-start justify-center w-full">
+            <!-- 上傳區 1 -->
+            <div class="flex flex-col items-center space-y-4">
+                <div id="upload1"
+                    class="w-72 h-56 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer group hover:shadow-white/20">
+                    <input type="file" id="file1" class="hidden" />
+                    <svg class="w-12 h-12 text-green-300 mb-3 group-hover:scale-110 transition-transform" fill="none"
+                        stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4-4m0 0l-4 4m4-4v12" />
+                    </svg>
+                    <p class="text-sm pointer-events-none">
+                        將檔案拖曳到此處，<br>
+                        <span class="text-green-200 underline">或點擊選取</span>
+                    </p>
+                    <div class="w-5/6 mt-3 border-t border-white/20"></div>
+                    <p id="fileName1" class="mt-2 text-xs text-green-200 truncate px-4"></p>
+                </div>
+                <button onclick="uploadFile('file1', 'edr', 'http://127.0.0.1:8000/api/upload/')"
+                    class="px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold rounded-full shadow hover:bg-white/20 transition-all duration-200">
+                    送出
+                </button>
+            </div>
+
+            <!-- 上傳區 2 -->
+            <div class="flex flex-col items-center space-y-4">
+                <div id="upload2"
+                    class="w-72 h-56 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl flex flex-col items-center justify-center text-center cursor-pointer group hover:shadow-white/20">
+                    <input type="file" id="file2" class="hidden" />
+                    <svg class="w-12 h-12 text-red-300 mb-3 group-hover:scale-110 transition-transform" fill="none"
+                        stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4-4m0 0l-4 4m4-4v12" />
+                    </svg>
+                    <p class="text-sm pointer-events-none">
+                        將檔案拖曳到此處，<br>
+                        <span class="text-red-200 underline">或點擊選取</span>
+                    </p>
+                    <div class="w-5/6 mt-3 border-t border-white/20"></div>
+                    <p id="fileName2" class="mt-2 text-xs text-red-200 truncate px-4"></p>
+                </div>
+                <button onclick="uploadFile('file2', 'mal', 'http://127.0.0.1:8000/api/upload/')"
+                    class="px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold rounded-full shadow hover:bg-white/20 transition-all duration-200">
+                    送出
+                </button>
+            </div>
+        </div>
+        <button onclick="start()"
+            class="mt-10 px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold rounded-full shadow hover:bg-white/20 transition-all duration-200">
+            開始比賽
+        </button>
+        <span class="mt-5 text-white font-semibold shadow" id="res" hidden></span>
+    </div>
+
+    <!-- Script -->
+    <script>
+        function setupUploader(dropZoneId, inputId, fileNameId) {
+            const dropZone = document.getElementById(dropZoneId);
+            const fileInput = document.getElementById(inputId);
+            const fileNameDisplay = document.getElementById(fileNameId);
+
+            dropZone.addEventListener("click", () => fileInput.click());
+
+            fileInput.addEventListener("change", () => {
+                fileNameDisplay.textContent = fileInput.files[0]?.name || '';
+            });
+
+            ["dragenter", "dragover"].forEach(event => {
+                dropZone.addEventListener(event, e => {
+                    e.preventDefault();
+                    dropZone.classList.add("ring-2", "ring-offset-2", "ring-blue-300");
+                });
+            });
+
+            ["dragleave", "drop"].forEach(event => {
+                dropZone.addEventListener(event, e => {
+                    e.preventDefault();
+                    dropZone.classList.remove("ring-2", "ring-offset-2", "ring-blue-300");
+                });
+            });
+
+            dropZone.addEventListener("drop", e => {
+                fileInput.files = e.dataTransfer.files;
+                fileNameDisplay.textContent = fileInput.files[0]?.name || '';
+            });
+        }
+
+        setupUploader("upload1", "file1", "fileName1");
+        setupUploader("upload2", "file2", "fileName2");
+
+        async function uploadFile(inputId, fileName, endpoint) {
+            const input = document.getElementById(inputId);
+            const teamSelect = document.getElementById("teamSelect");
+            const team = teamSelect.value;
+
+            if (!team) {
+                alert("請先選擇隊伍！");
+                return;
+            }
+
+            const file = input.files[0];
+
+            if (!file) {
+                alert("請先選擇檔案！");
+                return;
+            }
+
+            // 修改檔名
+            const newFileName = `team${team}_${fileName}.${file.name.split('.').pop()}`;
+            const renamedFile = new File([file], newFileName, { type: file.type });
+
+            const formData = new FormData();
+            formData.append("file", renamedFile);
+            formData.append("team", team);
+
+            try {
+                await fetch(endpoint, {
+                    method: "POST",
+                    body: formData,
+                    mode: 'cors',
+                }).then(response => {
+                    if (!response.ok) throw new Error("HTTP 錯誤：" + response.status);
+                    alert(`上傳成功!`);
+                })
+
+            } catch (err) {
+                alert(`上傳失敗：${err.message}`);
+            }
+        }
+
+        function start() {
+            alert('已開始比賽');
+            fetch('http://127.0.0.1:8000/api/start', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                res = document.getElementById('res');
+                res.innerText = `比賽結果：${JSON.stringify(data)}`;
+                res.hidden = false;
+            })
+        }
+    </script>
+</body>
+
+</html>
